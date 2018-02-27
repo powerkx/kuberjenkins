@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: jenkins
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:2.89.3
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: jenkins-master
+          protocol: TCP
+          hostPort: 30001
+        - containerPort: 50000
+          name: jenkins-agent
+          protocol: TCP
+          hostPort: 50000
+        volumeMounts:
+        - name: jenkinshome
+          mountPath: /var/jenkins_home
+        env:
+        - name: JAVA_OPTS
+          value: "-Duser.timezone=Asia/Shanghai"
+      volumes:
+      - name: jenkinshome
+        nfs:
+          server: 10.0.0.240
+          path: "/home/app/jenkins"
+     
